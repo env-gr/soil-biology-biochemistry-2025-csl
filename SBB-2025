@@ -1,0 +1,308 @@
+<?xml version="1.0" encoding="utf-8"?>
+<style xmlns="http://purl.org/net/xbiblio/csl"
+       version="1.0"
+       class="in-text"
+       default-locale="en-US"
+       demote-non-dropping-particle="never">
+
+  <info>
+    <title>Soil Biology and Biochemistry (2025 optimized)</title>
+    <title-short>SBB</title-short>
+    <id>http://www.zotero.org/styles/soil-biology-and-biochemistry-2025-optimized</id>
+
+    <link href="http://www.zotero.org/styles/soil-biology-and-biochemistry" rel="template"/>
+    <link href="https://www.elsevier.com/journals/soil-biology-and-biochemistry/0038-0717/guide-for-authors"
+          rel="documentation"/>
+
+    <author>
+      <name>Sun, Rongwei</name>
+    </author>
+    <contributor>
+      <name>Rintze Zelle</name>
+    </contributor>
+
+    <category citation-format="author-date"/>
+    <category field="biology"/>
+    <issn>0038-0717</issn>
+
+    <updated>2025-11-26T00:00:00+00:00</updated>
+
+    <rights license="http://creativecommons.org/licenses/by-sa/3.0/">
+      This work is licensed under a Creative Commons Attribution-ShareAlike 3.0 License
+    </rights>
+  </info>
+
+  <!-- ================== CORE MACROS ================== -->
+
+  <!-- Full author list for bibliography -->
+  <macro name="author">
+    <names variable="author">
+      <name name-as-sort-order="all"
+            sort-separator=", "
+            initialize-with="."
+            delimiter=", "
+            delimiter-precedes-last="always"/>
+      <substitute>
+        <names variable="editor"/>
+        <names variable="translator"/>
+        <text macro="title"/>
+      </substitute>
+    </names>
+  </macro>
+
+  <!-- Short author form for in-text citations -->
+  <macro name="author-short">
+    <names variable="author">
+      <name form="short"
+            and="text"
+            initialize-with="."
+            name-as-sort-order="all"
+            sort-separator=", "
+            delimiter=", "
+            delimiter-precedes-last="always"/>
+      <substitute>
+        <names variable="editor">
+          <name form="short"
+                and="text"
+                initialize-with="."
+                name-as-sort-order="all"
+                sort-separator=", "
+                delimiter=", "
+                delimiter-precedes-last="always"/>
+        </names>
+        <names variable="translator">
+          <name form="short"
+                and="text"
+                initialize-with="."
+                name-as-sort-order="all"
+                sort-separator=", "
+                delimiter=", "
+                delimiter-precedes-last="always"/>
+        </names>
+        <text variable="title" form="short"/>
+      </substitute>
+    </names>
+  </macro>
+
+  <!-- Year (for sorting and display) -->
+  <macro name="issued">
+    <choose>
+      <if variable="issued">
+        <date variable="issued">
+          <date-part name="year"/>
+        </date>
+      </if>
+      <else>
+        <text term="no date" form="short"/>
+      </else>
+    </choose>
+  </macro>
+
+  <!-- Edition: 2nd ed., 3rd ed., etc. -->
+  <macro name="edition">
+    <choose>
+      <if variable="edition">
+        <group delimiter=" ">
+          <choose>
+            <if is-numeric="edition">
+              <number variable="edition" form="ordinal"/>
+            </if>
+            <else>
+              <text variable="edition"/>
+            </else>
+          </choose>
+          <text term="edition" form="short"/>
+        </group>
+      </if>
+    </choose>
+  </macro>
+
+  <!-- Publisher + place -->
+  <macro name="publisher">
+    <group delimiter=", ">
+      <text variable="publisher"/>
+      <text variable="publisher-place"/>
+    </group>
+  </macro>
+
+  <!-- Editor list for “In: ...” containers -->
+  <macro name="editor-container">
+    <names variable="editor">
+      <name name-as-sort-order="all"
+            sort-separator=", "
+            initialize-with="."
+            delimiter=", "
+            delimiter-precedes-last="always"/>
+      <label form="short"
+             text-case="capitalize-first"
+             prefix=" ("
+             suffix=")"/>
+    </names>
+  </macro>
+
+  <!-- DOI / URL / accessed date -->
+  <macro name="access">
+    <choose>
+      <if variable="DOI">
+        <!-- SBB: doi:10.xxxx/... -->
+        <text variable="DOI" prefix=" doi:"/>
+      </if>
+      <else-if variable="URL">
+        <group prefix=" " delimiter=" ">
+          <text value="URL"/>
+          <text variable="URL"/>
+          <choose>
+            <if variable="accessed">
+              <group prefix=" (" suffix=").">
+                <text term="accessed" suffix=" "/>
+                <date variable="accessed">
+                  <date-part name="day" suffix=" "/>
+                  <date-part name="month" form="short" suffix=" "/>
+                  <date-part name="year"/>
+                </date>
+              </group>
+            </if>
+          </choose>
+        </group>
+      </else-if>
+    </choose>
+  </macro>
+
+  <!-- ================== CITATIONS (IN-TEXT) ================== -->
+
+  <citation et-al-min="3"
+            et-al-use-first="1"
+            disambiguate-add-givenname="true"
+            disambiguate-add-year-suffix="true"
+            collapse="year"
+            cite-group-delimiter=", ">
+    <!-- Order within a citation cluster: year → author -->
+    <sort>
+      <key macro="issued"/>
+      <key macro="author-short"/>
+    </sort>
+
+    <!-- (Allan, 1999; Allan and Jones, 1999; Allan, 2000a, 2000b) -->
+    <layout prefix="(" suffix=")" delimiter="; ">
+      <group delimiter=", ">
+        <text macro="author-short"/>
+        <text macro="issued"/>
+        <!-- Optional locators: pages, figures, etc. -->
+        <group delimiter=" ">
+          <label variable="locator" form="short"/>
+          <text variable="locator"/>
+        </group>
+      </group>
+    </layout>
+  </citation>
+
+  <!-- ================== BIBLIOGRAPHY ================== -->
+
+  <bibliography hanging-indent="true"
+                line-spacing="1"
+                entry-spacing="0">
+    <!-- Sort: author → year (ascending) → title -->
+    <sort>
+      <key macro="author"/>
+      <key macro="issued"/>
+      <key variable="title"/>
+    </sort>
+
+    <layout>
+      <choose>
+
+        <!-- Journal articles -->
+        <if type="article-journal article-magazine article-newspaper" match="any">
+          <group suffix=".">
+            <!-- Author, A.B., ..., 2019 -->
+            <text macro="author" suffix=","/>
+            <text macro="issued" prefix=" "/>
+            <!-- . Title. -->
+            <text variable="title" prefix=". "/>
+            <!-- . Journal Name 159, 108302 -->
+            <group prefix=". ">
+              <text variable="container-title" font-style="italic"/>
+              <group prefix=" " delimiter=", ">
+                <text variable="volume"/>
+                <text variable="page"/>
+              </group>
+            </group>
+          </group>
+          <text macro="access" prefix="."/>
+        </if>
+
+        <!-- Book chapters / conference papers -->
+        <else-if type="chapter paper-conference" match="any">
+          <group suffix=".">
+            <text macro="author" suffix=","/>
+            <text macro="issued" prefix=" "/>
+            <text variable="title" prefix=". "/>
+            <!-- In: Editor (Eds.), Book title -->
+            <text value="In:" prefix=" "/>
+            <text macro="editor-container" prefix=" " suffix=","/>
+            <text variable="container-title" prefix=" "/>
+            <!-- Publisher, place -->
+            <text macro="publisher" prefix=". "/>
+            <!-- pp. 281–304 -->
+            <group prefix=", ">
+              <label variable="page" form="short" suffix=" "/>
+              <text variable="page"/>
+            </group>
+          </group>
+          <text macro="access" prefix="."/>
+        </else-if>
+
+        <!-- Books / reports / similar -->
+        <else-if type="bill book graphic legal_case legislation motion-picture report song" match="any">
+          <group suffix=".">
+            <text macro="author" suffix=","/>
+            <text macro="issued" prefix=" "/>
+            <group prefix=". ">
+              <text variable="title"/>
+              <text macro="edition" prefix=", "/>
+            </group>
+            <text macro="publisher" prefix=". "/>
+          </group>
+          <text macro="access" prefix="."/>
+        </else-if>
+
+        <!-- Theses -->
+        <else-if type="thesis">
+          <group suffix=".">
+            <text macro="author" suffix=","/>
+            <text macro="issued" prefix=" "/>
+            <text variable="title" prefix=". "/>
+            <group prefix=". ">
+              <!-- Put “PhD thesis”, “MSc thesis”, etc. in Zotero’s “Type” or “Genre” field -->
+              <text variable="genre"/>
+              <text macro="publisher" prefix=". "/>
+            </group>
+          </group>
+          <text macro="access" prefix="."/>
+        </else-if>
+
+        <!-- Fallback for other types -->
+        <else>
+          <group suffix=".">
+            <text macro="author" suffix=","/>
+            <text macro="issued" prefix=" "/>
+            <text variable="title" prefix=". "/>
+            <choose>
+              <if variable="container-title">
+                <group prefix=". ">
+                  <text variable="container-title" font-style="italic"/>
+                  <group prefix=" " delimiter=", ">
+                    <text variable="volume"/>
+                    <text variable="page"/>
+                  </group>
+                </group>
+              </if>
+            </choose>
+          </group>
+          <text macro="access" prefix="."/>
+        </else>
+      </choose>
+    </layout>
+  </bibliography>
+
+</style>
