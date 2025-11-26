@@ -84,7 +84,7 @@ def normalize_author(author: str) -> str:
         # Default: first token is surname
         surname = tokens[0]
 
-    # Remove strange characters from surname (keep letters, hyphen, apostrophe, space)
+    # Remove non-letter characters from surname (keep letters, hyphen, apostrophe, space)
     surname = re.sub(r"[^A-Za-z\-'\s]", "", surname)
 
     return surname.lower()
@@ -126,7 +126,8 @@ def extract_reference_paragraphs(doc: Document):
     - There is a heading containing one of several keywords:
       'references', 'reference', 'bibliography', 'literature cited',
       'works cited', '参考文献', '參考文獻', '文献', '文獻'.
-    - All non-empty paragraphs after that heading are treated as reference entries.
+    - All non-empty paragraphs after that heading are treated as candidates
+      for reference entries (filtering is done later).
     """
     heading_keywords = [
         "references",
@@ -153,7 +154,7 @@ def extract_reference_paragraphs(doc: Document):
             continue
 
         if not text:
-            # skip empty lines
+            # Skip empty lines
             continue
 
         refs.append(text)
@@ -164,19 +165,28 @@ def extract_reference_paragraphs(doc: Document):
 def parse_reference_entries(ref_lines):
     """
     Parse reference entries and build keys of the form:
-      '<normalized_first_author>|<year>'
+      '<normalized_first_author>|<year>'.
 
     Assumptions:
-    - The first author is before the first comma.
+    - A "real" reference line starts with something like:
+        Surname, I.
+        Surname-Compound, I.J.
+      i.e. it matches ^\\S[^,]*,\\s*[A-Z]
     - The first year in the line is the publication year (with optional a/b).
     """
     entries = []
 
+    # Pattern for the start of a typical reference line (permissive, supports accents)
+    ref_start_pattern = re.compile(r"^\S[^,]*,\s*[A-Z]")
+
     for i, text in enumerate(ref_lines):
-        # Find year
+        # Skip lines that do not look like a reference start
+        if not ref_start_pattern.match(text):
+            continue
+
+        # Find first year in the line
         m = re.search(r"(\d{4}[a-z]?)", text)
         if not m:
-            # No year detected; skip
             continue
 
         year = m.group(1)
@@ -204,7 +214,7 @@ def parse_reference_entries(ref_lines):
 
 def main():
     # Path to your Word file
-    docx_path = Path(r"C:\path\to\your\docx\file.docx")
+    docx_path = Path(r"C:\Path\to\your\file.docx")
     if not docx_path.exists():
         raise FileNotFoundError(f"File not found: {docx_path}")
 
@@ -242,7 +252,7 @@ def main():
 
     doc = Document(docx_path)
     ref_lines = extract_reference_paragraphs(doc)
-    log_lines.append(f"Number of reference lines found after reference heading: {len(ref_lines)}")
+    log_lines.append(f"Number of lines after reference heading (candidates): {len(ref_lines)}")
 
     if not ref_lines:
         log_lines.append("ERROR: No reference list detected (no suitable heading or nothing after it).")
@@ -283,7 +293,9 @@ def main():
                 if e["key"] in unused_keys:
                     log_lines.append(f"  - {e['raw']}")
         else:
-            log_lines.append("\n[OK] Every parsed reference entry is cited at least once in the text (by first author + year).")
+            log_lines.append(
+                "\n[OK] Every parsed reference entry is cited at least once in the text (by first author + year)."
+            )
 
     # ------------------------------------------------------------------
     # 4) Overall summary
@@ -299,7 +311,7 @@ def main():
 
     log_lines.append(f"Total citation parentheses in text: {total_cit_parentheses}")
     log_lines.append(f"Total distinct citation keys (author|year): {total_cit_keys}")
-    log_lines.append(f"Total reference lines after heading: {total_ref_lines}")
+    log_lines.append(f"Total lines after reference heading (candidates): {total_ref_lines}")
     log_lines.append(f"Total parsed reference entries: {total_ref_entries}")
     log_lines.append(f"Number of missing citation keys (no match in references): {total_missing}")
     log_lines.append(f"Number of unused reference entries (not cited in text): {total_unused}")
